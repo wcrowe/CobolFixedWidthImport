@@ -1,0 +1,82 @@
+headerFields:
+  - name: AccountNumber
+    target: AccountNumber
+    start: 1
+    length: 12
+    type: string
+    options:
+      trim: both
+
+  - name: AccountName
+    target: AccountName
+    start: 13
+    length: 30
+    type: string
+    options:
+      trim: right
+      allSpacesBehavior: empty
+
+  - name: Balance
+    target: Balance
+    start: 43
+    length: 12
+    type: numeric
+    options:
+      allowOverpunch: "true"
+      impliedDecimalPlaces: "2"
+      allZerosBehavior: "zero"
+
+  - name: SourceSystem
+    target: SourceSystem
+    start: 1
+    length: 0
+    type: string
+    options:
+      source: constant
+      constantValue: "${SourceSystem}"
+
+  - name: ImportBatchId
+    target: ImportBatchId
+    start: 1
+    length: 0
+    type: string
+    options:
+      source: constant
+      constantValue: "${BatchId}"
+
+  - name: ImportedAtUtc
+    target: ImportedAtUtc
+    start: 1
+    length: 0
+    type: date
+    options:
+      source: now
+      nowKind: utc
+
+occursGroups: []   # single-table import
+rules:
+  dateFields:
+    formats: [ "yyyyMMdd", "MM-dd-yyyy", "MM/dd/yyyy", "yyyyMMddHHmmssff" ]
+    treatAllZerosAsNull: true
+    treatAllSpacesAsNull: true
+
+  numericFields:
+    allowOverpunch: true
+    treatAllSpacesAsNull: true
+    allZerosBehavior: "null"
+    defaultImpliedDecimalPlaces: 2
+
+  integerFields:
+    treatAllSpacesAsNull: true
+    allZerosBehavior: "null"
+
+  stringFields:
+    defaultTrim: both
+    allSpacesBehavior: null
+    caseNormalization: none
+
+  booleanFields:
+    trueValues: [ "Y", "1", "X" ]
+    falseValues: [ "N", "0" ]
+    anyNonBlankIsTrue: false
+    allSpacesBehavior: null

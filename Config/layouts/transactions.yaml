@@ -1,0 +1,213 @@
+headerFields:
+  - name: RecordType
+    target: RecordType
+    start: 1
+    length: 2
+    type: string
+    options:
+      trim: both
+      case: upper
+
+  - name: AccountNumber
+    target: AccountNumber
+    start: 3
+    length: 12
+    type: string
+    options:
+      trim: both
+      allSpacesBehavior: null
+
+  - name: TransactionDate
+    target: TransactionDate
+    start: 15
+    length: 8
+    type: date
+    options:
+      formats: "yyyyMMdd|MM-dd-yyyy|MM/dd/yyyy|yyyyMMddHHmmssff"
+
+  - name: Amount
+    target: Amount
+    start: 23
+    length: 12
+    type: numeric
+    options:
+      allowOverpunch: "true"
+      impliedDecimalPlaces: "4"
+      allZerosBehavior: "null"
+
+  - name: Field3Example
+    target: Field3Example
+    start: 35
+    length: 8
+    type: numeric
+    options:
+      # If decimal point exists, parser uses it as-is.
+      # If decimal point missing, impliedDecimalPlaces=5 (your requirement).
+      impliedDecimalPlaces: "5"
+      allowOverpunch: "true"
+      allZerosBehavior: "zero"
+
+  # Inject constants / timestamp at import time
+  - name: SourceSystem
+    target: SourceSystem
+    start: 1
+    length: 0
+    type: string
+    options:
+      source: constant
+      constantValue: "${SourceSystem}"   # token replaced from manifest/context
+
+  - name: ImportBatchId
+    target: ImportBatchId
+    start: 1
+    length: 0
+    type: string
+    options:
+      source: constant
+      constantValue: "${BatchId}"
+
+  - name: ImportedAtUtc
+    target: ImportedAtUtc
+    start: 1
+    length: 0
+    type: date
+    options:
+      source: now
+      nowKind: utc
+
+occursGroups:
+  - name: Lines
+    parentCollectionTarget: Lines
+    childEntity: TransactionLine
+    start: 43
+    length: 1500
+    itemLength: 30
+    maxItems: 50
+    terminationMode: padding
+
+    sequence:
+      enabled: true
+      target: LineSeq
+      start: 1
+      step: 1
+
+    itemFields:
+      - name: ItemCode
+        target: ItemCode
+        start: 1
+        length: 10
+        type: string
+        options:
+          trim: both
+          case: upper
+          allSpacesBehavior: null
+
+      - name: LineAmount
+        target: LineAmount
+        start: 11
+        length: 10
+        type: numeric
+        options:
+          allowOverpunch: "true"
+          impliedDecimalPlaces: "2"
+          allZerosBehavior: "null"
+
+      - name: Quantity
+        target: Quantity
+        start: 21
+        length: 5
+        type: integer
+        options:
+          allZerosBehavior: "zero"
+
+      - name: Notes
+        target: Notes
+        start: 26
+        length: 5
+        type: string
+        options:
+          trim: both
+          allSpacesBehavior: empty
+
+      - name: ImportedAtUtc
+        target: ImportedAtUtc
+        start: 1
+        length: 0
+        type: date
+        options:
+          source: now
+          nowKind: utc
+
+  - name: Fees
+    parentCollectionTarget: Fees
+    childEntity: TransactionFee
+    start: 1543
+    length: 800
+    itemLength: 20
+    maxItems: 40
+    terminationMode: padding
+
+    sequence:
+      enabled: true
+      target: FeeSeq
+      start: 1
+      step: 1
+
+    itemFields:
+      - name: FeeCode
+        target: FeeCode
+        start: 1
+        length: 5
+        type: string
+        options:
+          trim: both
+          case: upper
+
+      - name: Amount
+        target: Amount
+        start: 6
+        length: 10
+        type: numeric
+        options:
+          allowOverpunch: "true"
+          impliedDecimalPlaces: "2"
+          allZerosBehavior: "null"
+
+      - name: ImportedAtUtc
+        target: ImportedAtUtc
+        start: 1
+        length: 0
+        type: date
+        options:
+          source: now
+          nowKind: utc
+
+rules:
+  dateFields:
+    formats: [ "yyyyMMdd", "MM-dd-yyyy", "MM/dd/yyyy", "yyyyMMddHHmmssff" ]
+    treatAllZerosAsNull: true
+    treatAllSpacesAsNull: true
+
+  numericFields:
+    allowOverpunch: true
+    treatAllSpacesAsNull: true
+    allZerosBehavior: "null"
+    defaultImpliedDecimalPlaces: 2
+
+  integerFields:
+    treatAllSpacesAsNull: true
+    allZerosBehavior: "null"
+
+  stringFields:
+    defaultTrim: both
+    allSpacesBehavior: null
+    caseNormalization: none
+    replacements:
+      "N/A": ""
+      "NONE": ""
+
+  booleanFields:
+    trueValues: [ "Y", "1", "X" ]
+    falseValues: [ "N", "0" ]
+    anyNonBlankIsTrue: false
+    allSpacesBehavior: null

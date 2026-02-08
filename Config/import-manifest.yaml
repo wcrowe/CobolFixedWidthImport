@@ -1,0 +1,14 @@
+jobs:
+  - name: AccountsImport
+    mode: single
+    fileGlob: "ACCT*.txt"
+    layoutPath: "Config/layouts/accounts.yaml"
+    targetEntity: "Account"
+    table: "dbo.Account"
+
+  - name: TransactionsImport
+    mode: graph
+    fileGlob: "TXN*.txt"
+    layoutPath: "Config/layouts/transactions.yaml"
+    targetEntity: "Transaction"
+    table: "dbo.Transaction"
