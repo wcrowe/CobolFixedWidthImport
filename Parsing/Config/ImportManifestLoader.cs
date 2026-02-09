@@ -16,28 +16,32 @@ public sealed class ImportManifestLoader(ILogger<ImportManifestLoader> logger)
 
     public async Task<ImportManifest> LoadAsync(string path, CancellationToken ct)
     {
-        if (!File.Exists(path))
-            throw new FileNotFoundException($"Manifest not found: {path}");
-
-        var yaml = await File.ReadAllTextAsync(path, ct);
-
-        if (string.IsNullOrWhiteSpace(yaml))
-            throw new InvalidOperationException("Manifest YAML is empty.");
+        var yaml = await YamlFile.ReadAllTextNoBomAsync(path, _logger, ct);
 
         try
         {
             var manifest = Deserializer.Deserialize<ImportManifest>(yaml)
                 ?? throw new InvalidOperationException("Manifest deserialized as null.");
 
-            if (manifest.Jobs is null || manifest.Jobs.Count == 0)
-                throw new InvalidOperationException("Manifest contains no jobs.");
-
+            Validate(manifest);
             return manifest;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "YAML parse failure: {Path}", path);
+            _logger.LogError(ex, "Failed to parse manifest YAML.");
             throw;
+        }
+    }
+
+    private static void Validate(ImportManifest manifest)
+    {
+        if (manifest.Jobs is null || manifest.Jobs.Count == 0)
+            throw new InvalidOperationException("Manifest contains no jobs.");
+
+        foreach (var job in manifest.Jobs)
+        {
+            if (string.IsNullOrWhiteSpace(job.FileGlob))
+                throw new InvalidOperationException($"Job '{job.Name}' missing FileGlob.");
         }
     }
 }
