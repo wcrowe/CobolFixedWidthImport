@@ -15,9 +15,8 @@ public sealed record ImportJob
     public required string Name { get; init; }
 
     [Required]
-    public required string Mode { get; init; } // single | graph
+    public required string Mode { get; init; } // "single" or "graph"
 
-    // THIS WAS MISSING → causes YAML crash
     [Required]
     public required string FileGlob { get; init; }
 
