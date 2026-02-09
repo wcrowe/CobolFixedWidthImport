@@ -1,16 +1,31 @@
+#nullable enable
+using System.ComponentModel.DataAnnotations;
+
 namespace CobolFixedWidthImport.Parsing.Config;
 
-public static class ImportManifest
+public sealed record ImportManifest
 {
-    public sealed record Manifest(List<ImportJob> Imports);
+    [Required]
+    public required List<ImportJob> Jobs { get; init; }
+}
 
-    public sealed record ImportJob(
-        string Name,
-        string InputPattern,
-        string LayoutFile,
-        string Mode,          // "single" or "graph"
-        string? Entity,       // for single
-        string? ParentEntity, // for graph
-        string? SourceSystem,
-        string? BatchId);
+public sealed record ImportJob
+{
+    [Required]
+    public required string Name { get; init; }
+
+    [Required]
+    public required string Mode { get; init; } // single | graph
+
+    // THIS WAS MISSING → causes YAML crash
+    [Required]
+    public required string FileGlob { get; init; }
+
+    [Required]
+    public required string LayoutPath { get; init; }
+
+    [Required]
+    public required string TargetEntity { get; init; }
+
+    public string? Table { get; init; }
 }
